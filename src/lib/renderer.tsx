@@ -2,7 +2,10 @@
 
 import React from 'react';
 import Button from '../components/Button';
-import type { UIElement } from './parser';
+import Container from '../components/Container';
+import Title from '../components/Title';
+import Text from '../components/Text';
+import type { UIElement, ContainerElement, TitleElement, TextElement } from './parser';
 
 interface RendererProps {
   elements: UIElement[];
@@ -26,6 +29,30 @@ export function renderUI(elements: UIElement[]) {
           <Button key={i} className={className}>
             {el.label}
           </Button>
+        );
+      
+      case 'Container':
+        const containerEl = el as ContainerElement;
+        return (
+          <Container key={i}>
+            {renderUI(containerEl.children)}
+          </Container>
+        );
+
+      case 'Title':
+        const titleEl = el as TitleElement;
+        return (
+          <Title key={i}>
+            {titleEl.content}
+          </Title>
+        );
+
+      case 'Text':
+        const textEl = el as TextElement;
+        return (
+          <Text key={i}>
+            {textEl.content}
+          </Text>
         );
 
       default:

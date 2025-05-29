@@ -5,7 +5,15 @@ import { parseUI } from './lib/parser';
 import { renderUI } from './lib/renderer';
 
 export default function App() {
-  const [input, setInput] = useState<string>(`Button "Hola Mundo"\nButton "Click me" color=red`);
+  const [input, setInput] = useState<string>(`[Container]
+    [Title] Welcome to VolleyCodeUI
+    [Text] This interface is generated from simple text.
+    [Button "Get Started" color=blue]
+    [Button "Learn More" color=gray]
+[Container]
+    [Title] Another Section
+    [Text] With more content.
+    [Button "Submit" color=green]`);
 
   const elements = parseUI(input);
 
