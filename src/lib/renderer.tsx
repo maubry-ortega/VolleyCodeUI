@@ -150,20 +150,20 @@ export function renderUI(elements: UIElement[]) {
       
       case 'Container':
         const containerEl = el as ContainerElement;
-        // Ensure this is the only declaration of generalClassNames and generalInlineStyles in this block.
-        const { classNames: generalClassNames, inlineStyles: generalInlineStyles } = processStyleAttributes(containerEl.attributes);
+        // Renaming variables to ensure uniqueness within this block
+        const { classNames: specificContainerClassNames, inlineStyles: specificContainerInlineStyles } = processStyleAttributes(containerEl.attributes);
         
         // Comments explaining interaction with Container.tsx defaults and Tailwind precedence:
         // - Container.tsx has default classes (e.g., 'p-4 border rounded shadow-md my-2').
-        // - `generalClassNames` (e.g., from `padding=2` becoming `p-2`) are appended.
+        // - `specificContainerClassNames` (e.g., from `padding=2` becoming `p-2`) are appended.
         // - Tailwind applies the last conflicting utility class (e.g., `p-4 ... p-2` results in `p-2`).
-        // - `generalInlineStyles` are applied directly.
+        // - `specificContainerInlineStyles` are applied directly.
 
         return (
           <Container 
             key={i} 
-            style={generalInlineStyles} 
-            className={generalClassNames.join(' ')}
+            style={specificContainerInlineStyles} 
+            className={specificContainerClassNames.join(' ')}
           >
             {renderUI(containerEl.children)}
           </Container>
