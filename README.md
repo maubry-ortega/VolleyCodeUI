@@ -1,54 +1,58 @@
-# React + TypeScript + Vite
+# VolleyCodeUI - Generador de Interfaces desde Texto
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+¡Bienvenido a VolleyCodeUI! Un proyecto innovador que transforma una sintaxis de texto simple en interfaces de usuario dinámicas y funcionales utilizando React, TypeScript y Vite. Inspirado en la simplicidad y el poder de la abstracción.
 
-Currently, two official plugins are available:
+## 📜 Descripción General
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+VolleyCodeUI te permite definir la estructura y los componentes básicos de una interfaz de usuario mediante una notación de pseudocódigo intuitiva. El sistema parsea este texto, lo convierte en un Árbol de Sintaxis Abstracto (AST) y finalmente renderiza componentes React correspondientes.
 
-## Expanding the ESLint configuration
+Esto facilita la creación rápida de prototipos, la generación de UIs dinámicas y explora un enfoque novedoso para el desarrollo de interfaces.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## 🧩 ¿Cómo funciona?
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+El proceso es simple pero poderoso, siguiendo la filosofía de "descubrir sentido en la simplicidad":
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+1.  **Definición con Pseudocódigo**: Escribes la estructura de tu UI usando una sintaxis especial. Por ejemplo:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+    ```plaintext
+    [Container]
+        [Title] Bienvenido
+        [Text] Esta es una interfaz generada por texto
+        [Button primary] Empezar
+    ```
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
-```
+2.  **Parseo Inteligente**: El parser (`src/lib/parser.ts`) analiza este texto. Identifica los diferentes elementos, sus propiedades y su anidamiento. Cada línea se procesa para extraer la información relevante.
+
+3.  **Generación de Componentes**: El renderizador (`src/lib/renderer.tsx`) toma la estructura parseada (el AST) y la transforma en componentes React reales. Cada tipo de elemento en el pseudocódigo tiene un componente React correspondiente en `src/components/`.
+
+4.  **Renderizado en React**: La aplicación principal (`src/App.tsx`) utiliza estas funciones para mostrar la interfaz generada, permitiendo una visualización y prueba instantánea.
+
+## ✨ Características Clave
+
+*   **Sintaxis Simple y Estructurada**: Define UIs complejas con una notación fácil de aprender y leer. La indentación se usa para indicar anidamiento dentro de los contenedores.
+*   **Componentes Soportados**:
+    *   `[Container]`: Agrupa otros elementos. Puede contener otros `Container` para estructuras más complejas.
+    *   `[Title]`: Para mostrar títulos o encabezados.
+    *   `[Text]`: Para párrafos de texto o descripciones.
+    *   `[Button "Texto del botón" color=valor]`: Para botones interactivos.
+        *   El texto del botón va entre comillas.
+        *   El `color` es opcional y puede ser `blue` (defecto), `red`, `green`, `yellow`, o `gray`. Por ejemplo: `[Button "Aceptar" color=green]`.
+        *   También se soporta una sintaxis simplificada para colores primarios o por defecto: `[Button primary] Texto Botón` o `[Button] Texto Botón`.
+*   **Extensible**: Fácil de añadir nuevos tipos de elementos y componentes.
+*   **Desarrollo Rápido**: Ideal para prototipado y generación dinámica de interfaces.
+*   **Basado en Tecnologías Modernas**: Construido con React, TypeScript, Vite y TailwindCSS.
+
+## 🚀 Empezando
+
+1.  Clona el repositorio.
+2.  Instala las dependencias: `pnpm install` (o `npm install` / `yarn install`).
+3.  Inicia el servidor de desarrollo: `pnpm dev` (o `npm run dev` / `yarn dev`).
+
+Abre tu navegador en la dirección indicada y comienza a experimentar cambiando el texto en el área designada.
+
+## 🤝 Contribuciones
+
+Las contribuciones son bienvenidas. Si tienes ideas para mejorar VolleyCodeUI, nuevas características o encuentras algún error, por favor abre un issue o envía un pull request.
+
+---
+*Un proyecto de Maubry para explorar nuevas fronteras en la creación de UIs.*
