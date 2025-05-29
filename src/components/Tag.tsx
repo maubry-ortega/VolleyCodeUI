@@ -6,6 +6,7 @@ interface TagProps {
   color?: string; // e.g., "blue", "green", "#FF0000", "rgb(255,0,0)"
   size?: string;  // e.g., "sm", "md", "lg"
   className?: string;
+  style?: React.CSSProperties; // Allow style prop from renderer
 }
 
 // Helper to get contrasting text color (very basic for hex only)
@@ -54,34 +55,47 @@ export default function Tag({ text, color, size, className = '' }: TagProps) {
   const currentSizeClasses = sizeClasses[size?.toLowerCase() || 'md'] || sizeClasses.md;
   
   let colorClassNames = '';
-  let inlineStyle: React.CSSProperties = {};
+  // Prioritize passed style, then compute internal styles
+  let finalStyle: React.CSSProperties = { ...style }; // Start with style from props
 
-  const lowerColor = color?.toLowerCase();
+  const lowerColor = color?.toLowerCase(); // Tag's specific 'color' prop for background/theme
+
+  // Check if textColor is already set via general 'textColor' attribute (inline style)
+  const hasGeneralTextColorStyle = finalStyle.color;
+  // Check if textColor is already set via general 'textColor' attribute (Tailwind class in passed className)
+  const hasGeneralTextColorClass = className?.includes('text-');
+
 
   if (lowerColor && namedColorClasses[lowerColor]) {
-    colorClassNames = `${namedColorClasses[lowerColor].bg} ${namedColorClasses[lowerColor].text}`;
+    colorClassNames = namedColorClasses[lowerColor].bg;
+    if (!hasGeneralTextColorStyle && !hasGeneralTextColorClass) { // Only apply named text color if no general text color is set
+      colorClassNames += ` ${namedColorClasses[lowerColor].text}`;
+    }
   } else if (lowerColor && (lowerColor.startsWith('#') || lowerColor.startsWith('rgb'))) {
-    // For custom hex/rgb/rgba colors, apply directly to style.backgroundColor
-    inlineStyle.backgroundColor = color; // Use original casing for style
-    // Basic text contrast for hex, others might need more complex logic or a textColor attribute
-    if (lowerColor.startsWith('#')) {
-      colorClassNames = getContrastingTextColorForHex(lowerColor);
-    } else {
-      // For rgb/rgba, it's harder to get a simple contrast. Defaulting or requiring textColor attribute would be better.
-      // For now, let's use a default that works okay on many light/medium custom backgrounds.
-      colorClassNames = 'text-black'; // Or could be white, depending on typical custom color usage.
+    finalStyle.backgroundColor = color; // Use original casing
+    if (!hasGeneralTextColorStyle && !hasGeneralTextColorClass) { // Only apply contrast text color if no general text color
+      if (lowerColor.startsWith('#')) {
+        colorClassNames += ` ${getContrastingTextColorForHex(lowerColor)}`;
+      } else {
+        colorClassNames += ' text-black'; // Default for non-hex custom bg
+      }
     }
   } else {
-    // Default color if not specified or not recognized (e.g., use gray)
-    colorClassNames = `${namedColorClasses.gray.bg} ${namedColorClasses.gray.text}`;
+    // Default theme color if Tag's 'color' prop not specified AND no general 'bgColor' from style prop
+    if (!finalStyle.backgroundColor && !className?.split(' ').some(cls => cls.startsWith('bg-'))) {
+      colorClassNames = namedColorClasses.gray.bg;
+      if (!hasGeneralTextColorStyle && !hasGeneralTextColorClass) { // And no general text color
+         colorClassNames += ` ${namedColorClasses.gray.text}`;
+      }
+    }
   }
   
   const baseClasses = 'inline-flex items-center font-medium rounded-full my-1';
 
   return (
     <span
-      style={inlineStyle}
-      className={`${baseClasses} ${currentSizeClasses} ${colorClassNames} ${className}`}
+      style={finalStyle} // Apply merged styles
+      className={`${baseClasses} ${currentSizeClasses} ${colorClassNames} ${className}`} // Passed className is last for higher specificity for general classes
     >
       {text}
     </span>
