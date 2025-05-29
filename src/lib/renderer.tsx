@@ -101,9 +101,12 @@ export function renderUI(elements: UIElement[]) {
         const buttonEl = el as ButtonElement;
         const { classNames: generalClassNames, inlineStyles: generalInlineStyles } = processStyleAttributes(buttonEl.attributes);
         
-        let buttonComponentProps: React.ComponentProps<typeof Button> = {
+        // DUPLICATE LINE REMOVED
+        
+        let allButtonProps = { 
           key: i,
-          style: generalInlineStyles, // Apply general inline styles first
+          style: generalInlineStyles,
+          className: '', 
         };
 
         // Button-specific background color logic (from its 'color' attribute for background)
@@ -122,15 +125,13 @@ export function renderUI(elements: UIElement[]) {
           const lowerBgColorAttr = buttonBgColorAttr.toLowerCase();
           if (namedBgColorClasses[lowerBgColorAttr]) {
             specificBgClass = namedBgColorClasses[lowerBgColorAttr];
-            // If a general backgroundColor was set via style, clear it because named class takes over.
-            if (buttonComponentProps.style?.backgroundColor) {
-              delete buttonComponentProps.style.backgroundColor;
+            if (allButtonProps.style?.backgroundColor) { // CORRECTED
+              delete allButtonProps.style.backgroundColor; // CORRECTED
             }
           } else if (lowerBgColorAttr.startsWith('#') || lowerBgColorAttr.startsWith('rgb')) {
-            buttonComponentProps.style = { ...buttonComponentProps.style, backgroundColor: buttonBgColorAttr };
+            allButtonProps.style = { ...allButtonProps.style, backgroundColor: buttonBgColorAttr }; // CORRECTED
           }
-        } else if (!buttonComponentProps.style?.backgroundColor && generalClassNames.every(cn => !cn.startsWith('bg-'))) {
-          // Default button background if NO 'color' attribute on button AND NO 'bgColor' from general styles.
+        } else if (!allButtonProps.style?.backgroundColor && generalClassNames.every(cn => !cn.startsWith('bg-'))) { // CORRECTED
           specificBgClass = namedBgColorClasses.blue;
         }
         
@@ -140,10 +141,11 @@ export function renderUI(elements: UIElement[]) {
         if (specificBgClass) {
           finalClassNames.push(specificBgClass);
         }
-        buttonComponentProps.className = finalClassNames.filter(Boolean).join(' ');
+        allButtonProps.className = finalClassNames.filter(Boolean).join(' ');
         
+        const { key: buttonKey, ...buttonRestProps } = allButtonProps;
         return (
-          <Button {...buttonComponentProps}>
+          <Button key={buttonKey} {...buttonRestProps}>
             {buttonEl.text}
           </Button>
         );
@@ -193,19 +195,25 @@ export function renderUI(elements: UIElement[]) {
       case 'Input':
         const inputEl = el as InputElement;
         const { classNames: inputClassNames, inlineStyles: inputInlineStyles } = processStyleAttributes(inputEl.attributes);
-        const inputComponentProps = {
+        
+        // Destructure 'value' and other attributes from inputEl.attributes
+        const { value: initialValue, ...restAttributes } = inputEl.attributes;
+
+        const allInputProps = {
           key: i,
-          ...inputEl.attributes, // Spread specific input attributes like value, placeholder, name, etc.
-          type: inputEl.attributes.type || 'text',
-          className: inputClassNames.join(' '), // Pass general classes to be appended
+          ...restAttributes, // Spread other attributes like placeholder, name, id etc.
+          type: inputEl.attributes.type || 'text', // type is still from original attributes or default
+          defaultValue: initialValue, // Use defaultValue for the initial value
+          className: inputClassNames.join(' '), 
           style: inputInlineStyles,
         };
-        return <Input {...inputComponentProps} />;
+        const { key: inputKey, ...inputRestProps } = allInputProps;
+        return <Input key={inputKey} {...inputRestProps} />;
 
       case 'Checkbox':
         const checkboxEl = el as CheckboxElement;
         const { classNames: checkboxContainerClassNames, inlineStyles: checkboxContainerInlineStyles } = processStyleAttributes(checkboxEl.attributes);
-        const checkboxComponentProps = {
+        const allCheckboxProps = {
           key: i,
           label: checkboxEl.text,
           defaultChecked: checkboxEl.attributes.checked === 'true',
@@ -215,35 +223,40 @@ export function renderUI(elements: UIElement[]) {
           className: checkboxContainerClassNames.join(' '), 
           style: checkboxContainerInlineStyles,
         };
-        return <Checkbox {...checkboxComponentProps} />;
+        const { key: checkboxKey, ...checkboxRestProps } = allCheckboxProps;
+        return <Checkbox key={checkboxKey} {...checkboxRestProps} />;
 
       case 'RadioGroup':
         const radioGroupEl = el as RadioGroupElement;
         const { classNames: radioGroupClassNames, inlineStyles: radioGroupInlineStyles } = processStyleAttributes(radioGroupEl.attributes);
         const groupName = radioGroupEl.attributes.name || `radiogroup-${i}`;
 
+        const allRadioGroupProps = {
+            key: i,
+            label: radioGroupEl.text,
+            name: groupName,
+            id: radioGroupEl.attributes.id,
+            className: radioGroupClassNames.join(' '),
+            style: radioGroupInlineStyles
+        };
+        const { key: radioGroupKey, ...radioGroupRestProps } = allRadioGroupProps;
+
         return (
-          <RadioGroup
-            key={i}
-            label={radioGroupEl.text}
-            name={groupName}
-            id={radioGroupEl.attributes.id}
-            className={radioGroupClassNames.join(' ')}
-            style={radioGroupInlineStyles}
-          >
+          <RadioGroup key={radioGroupKey} {...radioGroupRestProps}>
             {radioGroupEl.children.map((radioChild, radioIdx) => {
               const { classNames: rbClassNames, inlineStyles: rbInlineStyles } = processStyleAttributes(radioChild.attributes);
-              const radioButtonProps = {
-                key: `${i}-${radioIdx}`,
+              const allRadioButtonProps = { // Renamed to avoid conflict
+                key: `${i}-${radioIdx}`, // Unique key for child
                 label: radioChild.text,
                 defaultChecked: radioChild.attributes.checked === 'true',
                 value: radioChild.attributes.value,
-                name: groupName,
+                name: groupName, 
                 id: radioChild.attributes.id,
                 className: rbClassNames.join(' '), 
                 style: rbInlineStyles, 
               };
-              return <RadioButton {...radioButtonProps} />;
+              const { key: radioButtonKey, ...radioButtonRestProps } = allRadioButtonProps;
+              return <RadioButton key={radioButtonKey} {...radioButtonRestProps} />;
             })}
           </RadioGroup>
         );
@@ -252,7 +265,7 @@ export function renderUI(elements: UIElement[]) {
         console.warn('Renderer Warning: Orphan RadioButton element encountered. Rendering with a default name.');
         const radioButtonEl = el as RadioButtonElement;
         const { classNames: orphanRbClassNames, inlineStyles: orphanRbInlineStyles } = processStyleAttributes(radioButtonEl.attributes);
-        const orphanRadioProps = {
+        const allOrphanRadioProps = {
           key: i,
           label: radioButtonEl.text,
           defaultChecked: radioButtonEl.attributes.checked === 'true',
@@ -262,7 +275,8 @@ export function renderUI(elements: UIElement[]) {
           className: orphanRbClassNames.join(' '),
           style: orphanRbInlineStyles,
         };
-        return <RadioButton {...orphanRadioProps} />;
+        const { key: orphanRadioButtonKey, ...orphanRadioButtonRestProps } = allOrphanRadioProps;
+        return <RadioButton key={orphanRadioButtonKey} {...orphanRadioButtonRestProps} />;
 
       case 'Select':
         const selectEl = el as SelectElement;
@@ -274,7 +288,7 @@ export function renderUI(elements: UIElement[]) {
             break;
           }
         }
-        const selectComponentProps = {
+        const allSelectProps = {
           key: i,
           label: selectEl.text,
           name: selectEl.attributes.name,
@@ -284,18 +298,21 @@ export function renderUI(elements: UIElement[]) {
           className: selectClassNames.join(' '), 
           style: selectInlineStyles, 
         };
+        const { key: selectKey, ...selectRestProps } = allSelectProps;
+
         return (
-          <Select {...selectComponentProps}>
+          <Select key={selectKey} {...selectRestProps}>
             {selectEl.children.map((optionEl, optionIdx) => {
               const { classNames: optClassNames, inlineStyles: optInlineStyles } = processStyleAttributes(optionEl.attributes);
-              const optionComponentProps = {
-                key: `${i}-${optionIdx}`,
+              const allOptionProps = { // Renamed
+                key: `${i}-${optionIdx}`, // Unique key for child
                 value: optionEl.attributes.value || optionEl.text,
                 disabled: optionEl.attributes.disabled === 'true',
                 className: optClassNames.join(' '), 
                 style: optInlineStyles, 
               };
-              return <Option {...optionComponentProps}>{optionEl.text}</Option>;
+              const { key: optionKey, ...optionRestProps } = allOptionProps;
+              return <Option key={optionKey} {...optionRestProps}>{optionEl.text}</Option>;
             })}
           </Select>
         );
@@ -304,14 +321,15 @@ export function renderUI(elements: UIElement[]) {
         console.warn('Renderer Warning: Orphan Option element encountered. Rendering it directly, but it might not function as expected.');
         const optionEl = el as OptionElement;
         const { classNames: orphanOptClassNames, inlineStyles: orphanOptInlineStyles } = processStyleAttributes(optionEl.attributes);
-        const orphanOptionProps = {
+        const allOrphanOptionProps = {
           key: i,
           value: optionEl.attributes.value || optionEl.text,
           disabled: optionEl.attributes.disabled === 'true',
           className: orphanOptClassNames.join(' '),
           style: orphanOptInlineStyles,
         };
-        return <Option {...orphanOptionProps}>{optionEl.text}</Option>;
+        const { key: orphanOptionKey, ...orphanOptionRestProps } = allOrphanOptionProps;
+        return <Option key={orphanOptionKey} {...orphanOptionRestProps}>{optionEl.text}</Option>;
 
       case 'Image':
         const imageEl = el as ImageElement;
@@ -319,22 +337,22 @@ export function renderUI(elements: UIElement[]) {
         
         if (!imageEl.attributes.src) {
           console.warn('Image element is missing "src" attribute:', imageEl.attributes);
+          // Ensure key is passed directly for error case div
           return <div key={i} className="text-red-500 text-xs p-2 bg-red-100 border border-red-300 rounded">[Image: SRC attribute is missing]</div>;
         }
-        // Specific image attributes (width, height for <img> tag) override generic width/height from styles if any conflict.
-        // HTML attributes take precedence over CSS for `width` and `height` on `<img>`
-        const imageComponentProps = {
+        const allImageProps = {
           key: i,
           src: imageEl.attributes.src,
           alt: imageEl.attributes.alt,
-          width: imageEl.attributes.width, // Specific prop for <img> width attribute
-          height: imageEl.attributes.height, // Specific prop for <img> height attribute
+          width: imageEl.attributes.width, 
+          height: imageEl.attributes.height, 
           title: imageEl.attributes.title,
           loading: imageEl.attributes.loading as 'eager' | 'lazy' | undefined,
           className: imageClassNames.join(' '),
           style: imageInlineStyles, 
         };
-        return <Image {...imageComponentProps} />;
+        const { key: imageKey, ...imageRestProps } = allImageProps;
+        return <Image key={imageKey} {...imageRestProps} />;
 
       case 'Icon':
         const iconEl = el as IconElement;
@@ -342,11 +360,10 @@ export function renderUI(elements: UIElement[]) {
 
         if (!iconEl.attributes.name) {
           console.warn('Icon element is missing "name" attribute:', iconEl.attributes);
+          // Ensure key is passed directly for error case div
           return <div key={i} className="text-red-500 text-xs p-2 bg-red-100 border border-red-300 rounded">[Icon: NAME attribute is missing]</div>;
         }
-        // Icon component's specific 'color' and 'size' props are used for its internal styling.
-        // We merge general styles, but Icon's internal logic for its specific props might override parts of `iconInlineStyles`.
-        const iconComponentProps = {
+        const allIconProps = {
           key: i,
           name: iconEl.attributes.name,
           color: iconEl.attributes.color, 
@@ -355,14 +372,13 @@ export function renderUI(elements: UIElement[]) {
           className: iconClassNames.join(' '),
           style: iconInlineStyles, 
         };
-        return <Icon {...iconComponentProps} />;
+        const { key: iconKey, ...iconRestProps } = allIconProps;
+        return <Icon key={iconKey} {...iconRestProps} />;
 
       case 'Tag':
         const tagEl = el as TagElement;
         const { classNames: tagClassNames, inlineStyles: tagInlineStyles } = processStyleAttributes(tagEl.attributes);
-        // Tag component has specific 'color' and 'size' props.
-        // Similar to Icon, merge general styles, but Tag's internal logic for its props takes precedence for its specific styling.
-        const tagComponentProps = {
+        const allTagProps = {
           key: i,
           text: tagEl.text,
           color: tagEl.attributes.color, 
@@ -370,7 +386,8 @@ export function renderUI(elements: UIElement[]) {
           className: tagClassNames.join(' '),
           style: tagInlineStyles,
         };
-        return <Tag {...tagComponentProps} />;
+        const { key: tagKey, ...tagRestProps } = allTagProps;
+        return <Tag key={tagKey} {...tagRestProps} />;
         
       default:
         return null;

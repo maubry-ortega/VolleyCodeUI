@@ -51,12 +51,12 @@ const sizeClasses: Record<string, string> = {
   lg: 'text-base px-3 py-1',   // Adjusted py for lg
 };
 
-export default function Tag({ text, color, size, className = '' }: TagProps) {
+export default function Tag({ text, color, size, className = '', style = {} }: TagProps) { // Added style = {}
   const currentSizeClasses = sizeClasses[size?.toLowerCase() || 'md'] || sizeClasses.md;
   
   let colorClassNames = '';
   // Prioritize passed style, then compute internal styles
-  let finalStyle: React.CSSProperties = { ...style }; // Start with style from props
+  let finalStyle: React.CSSProperties = { ...style }; // Start with style from props (now defined)
 
   const lowerColor = color?.toLowerCase(); // Tag's specific 'color' prop for background/theme
 
