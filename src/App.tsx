@@ -5,15 +5,21 @@ import { parseUI } from './lib/parser';
 import { renderUI } from './lib/renderer';
 
 export default function App() {
-  const [input, setInput] = useState<string>(`[Container]
-    [Title] Welcome to VolleyCodeUI
-    [Text] This interface is generated from simple text.
-    [Button "Get Started" color=blue]
-    [Button "Learn More" color=gray]
-[Container]
-    [Title] Another Section
-    [Text] With more content.
-    [Button "Submit" color=green]`);
+  const [input, setInput] = useState<string>(`Container width=90% height=auto
+    Title "VolleyCodeUI Showcase"
+    Text "Demonstrating new syntax and features like custom sizes and colors."
+
+    Container width=60% height=200px
+        Title "Custom Styled Buttons"
+        Button "Hex Color" color=#C70039 id=hexBtn
+        Button "RGB Color" color=rgb(255,195,0)
+        Button "RGBA Color" color=rgba(100,100,255,0.8)
+        Button "Named (Yellow)" color=yellow
+    
+    Container
+        Title "Nested Content Area"
+        Text "This container has default sizing and contains another button."
+        Button "Default Button"`);
 
   const elements = parseUI(input);
 
