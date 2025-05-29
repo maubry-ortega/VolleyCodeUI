@@ -15,13 +15,18 @@ El proceso es simple pero poderoso, siguiendo la filosofía de "descubrir sentid
 1.  **Definición con Pseudocódigo**: Escribes la estructura de tu UI usando una sintaxis que define el tipo de elemento, seguido opcionalmente por un texto principal entre comillas y luego pares de `atributo=valor`. Por ejemplo:
 
     ```plaintext
-    Container width=80%
-        Title "Bienvenido a VolleyCodeUI"
-        Text "Esta es una interfaz generada dinámicamente desde texto."
-        Button "Empezar Aventura" color=blue id=startButton
+    Container width="90%" margin="0 auto" padding=6 bgColor=white rounded=lg shadow=md
+        Title "Bienvenido a VolleyCodeUI" align=center textColor=blue-700
+        Text "Explora los componentes y sus capacidades de estilo." align=center textColor=gray-600 margin="0 0 4 0"
+        
+        Input placeholder="Escribe algo aquí..." width="50%" margin="0 auto 4 auto" padding=3 rounded=md
+        
+        Container align=center
+            Button "¡Comenzar!" color=green shadow=md rounded=lg textColor=white
+            Button "Más Info" color=gray margin="0 0 0 2"
     ```
 
-2.  **Parseo Inteligente**: El parser (`src/lib/parser.ts`) analiza este texto. Identifica los diferentes elementos, su texto principal (si aplica), sus atributos (como `color`, `width`, `height`, etc.) y su anidamiento. Cada línea se procesa para extraer la información relevante.
+2.  **Parseo Inteligente**: El parser (`src/lib/parser.ts`) analiza este texto. Identifica los diferentes elementos, su texto principal (si aplica), sus atributos (incluyendo atributos de estilo generales y específicos del componente) y su anidamiento. Cada línea se procesa para extraer la información relevante.
 
 3.  **Generación de Componentes**: El renderizador (`src/lib/renderer.tsx`) toma la estructura parseada (el AST) y la transforma en componentes React reales. Cada tipo de elemento en el pseudocódigo tiene un componente React correspondiente en `src/components/`.
 
@@ -29,30 +34,65 @@ El proceso es simple pero poderoso, siguiendo la filosofía de "descubrir sentid
 
 ## ✨ Características Clave
 
-*   **Sintaxis Simple y Estructurada**: Define UIs complejas con una notación fácil de aprender y leer: `Elemento "Texto principal opcional" atributo1=valor1 atributo2="valor con espacios" ...`. La indentación se usa para indicar anidamiento dentro de los `Container`.
+*   **Sintaxis Simple y Estructurada**: Define UIs complejas con una notación fácil de aprender y leer: `Elemento "Texto principal opcional" atributo1=valor1 atributo2="valor con espacios" ...`. La indentación se usa para indicar anidamiento dentro de los elementos contenedores como `Container`, `RadioGroup` y `Select`.
 *   **Componentes Soportados**:
-    *   `Container`: Agrupa otros elementos. Puede contener otros `Container` para estructuras más complejas.
-        *   Atributos Soportados:
-            *   `width`: Define el ancho del contenedor (e.g., `width=500px`, `width=75%`, `width=100vw`).
-            *   `height`: Define la altura del contenedor (e.g., `height=300px`, `height=auto`, `height=50vh`).
-            *   Ejemplo: `Container width=300px height=auto`
-    *   `Title "Texto del título"`: Para mostrar títulos o encabezados. El texto principal va entre comillas.
-        *   Ejemplo: `Title "Encabezado Principal"`
-    *   `Text "Párrafo de texto"`: Para párrafos de texto o descripciones. El texto principal va entre comillas.
-        *   Ejemplo: `Text "Este es un párrafo descriptivo."`
-    *   `Button "Texto del botón" atributo=valor`: Para botones interactivos. El texto principal del botón va entre comillas.
-        *   Atributos Soportados:
-            *   `color`: Define el color del botón. Acepta:
-                *   Nombres de colores predefinidos: `blue` (defecto), `red`, `green`, `yellow`, `gray`.
-                    *   Ejemplo: `Button "Confirmar" color=green`
-                *   Valores hexadecimales: `#RRGGBB` o `#RGB`.
-                    *   Ejemplo: `Button "Rojo Hex" color=#FF0000`
-                *   Valores RGB: `rgb(R,G,B)`.
-                    *   Ejemplo: `Button "Verde RGB" color=rgb(76,175,80)`
-                *   Valores RGBA: `rgba(R,G,B,A)`.
-                    *   Ejemplo: `Button "Azul RGBA Transparente" color=rgba(0,0,255,0.7)`
-            *   Otros atributos como `id` también pueden ser añadidos y serán almacenados, aunque no todos tengan un efecto visual directo sin modificaciones en el renderer.
-                *   Ejemplo: `Button "Click Me" color=blue id=myButton`
+    *   `Container`: Agrupa otros elementos. Puede anidar otros `Container`s.
+        *   Ejemplo: `Container padding=4 bgColor="#f0f0f0"`
+    *   `Title "Texto del título"`: Para encabezados.
+        *   Ejemplo: `Title "Mi Página Increíble" align=center textColor=blue-600`
+    *   `Text "Párrafo de texto"`: Para párrafos.
+        *   Ejemplo: `Text "Este es un texto descriptivo importante." textColor="#333"`
+    *   `Button "Texto del botón"`: Botones interactivos.
+        *   Atributos Específicos:
+            *   `color`: Define el color de fondo del botón. Acepta nombres predefinidos (`blue`, `red`, `green`, `yellow`, `gray`), valores hexadecimales (`#RRGGBB`), RGB (`rgb(R,G,B)`) o RGBA (`rgba(R,G,B,A)`).
+                *   Ejemplos: `Button "Primario" color=blue`, `Button "Alerta" color="#e53e3e"`
+    *   `Input`: Campos de entrada de texto.
+        *   Atributos Específicos: `placeholder`, `value` (valor inicial), `type` (text, email, password, number, etc.), `name`, `id`.
+        *   Ejemplo: `Input placeholder="Tu nombre" name=userName width="50%"`
+    *   `Checkbox "Etiqueta del checkbox"`: Para selecciones booleanas.
+        *   Atributos Específicos: `checked` ("true" o "false" para estado inicial), `value`, `name`, `id`.
+        *   Ejemplo: `Checkbox "Acepto los términos" checked=true name=terms`
+    *   `RadioGroup "Leyenda del grupo"`: Agrupa botones de radio. Requiere un atributo `name` para la funcionalidad del grupo.
+        *   Atributos Específicos: `name` (para el grupo), `id`.
+        *   Ejemplo de Grupo:
+            ```plaintext
+            RadioGroup "Elige una opción" name=myChoice
+                Radio "Opción Alpha" value=alpha checked=true
+                Radio "Opción Beta" value=beta
+            ```
+    *   `Radio "Etiqueta del radio"`: Botón de opción individual, debe estar dentro de un `RadioGroup`.
+        *   Atributos Específicos: `value`, `checked` ("true" o "false"), `id`.
+    *   `Select "Etiqueta del select"`: Un menú desplegable.
+        *   Atributos Específicos: `name`, `id`, `required` ("true" o "false"). La selección inicial se maneja con `selected=true` en un `Option`.
+        *   Ejemplo de Select:
+            ```plaintext
+            Select "Elige tu fruta" name=fruit
+                Option "Manzana" value=apple
+                Option "Banana" value=banana selected=true
+                Option "Naranja" value=orange disabled=true
+            ```
+    *   `Option "Texto a mostrar"`: Opción dentro de un `Select`.
+        *   Atributos Específicos: `value`, `selected` ("true" o "false"), `disabled` ("true" o "false").
+    *   `Image`: Para mostrar imágenes.
+        *   Atributos Específicos: `src` (URL de la imagen, **obligatorio**), `alt` (texto alternativo), `width`, `height` (como números o con unidades CSS).
+        *   Ejemplo: `Image src="https://via.placeholder.com/150" alt="Imagen de ejemplo" width=150 height=100`
+    *   `Icon`: Placeholder para mostrar iconos (actualmente muestra texto descriptivo).
+        *   Atributos Específicos: `name` (identificador del icono, **obligatorio**), `color` (para el color del icono), `size` (para el tamaño), `label` (para accesibilidad).
+        *   Ejemplo: `Icon name=star color=gold size=24 label="Favorito"`
+    *   `Tag "Texto de la etiqueta"`: Para mostrar pequeñas etiquetas o badges.
+        *   Atributos Específicos: `color` (para el tema de color del tag, e.g., `blue`, `green`, `#FF0000`), `size` (`sm`, `md`, `lg`).
+        *   Ejemplo: `Tag "Nuevo" color=green size=sm`
+
+*   **🎨 Atributos de Estilo Generales**: La mayoría de los componentes aceptan los siguientes atributos para personalización fina:
+    *   `padding`: Espaciado interno. Ejemplos: `padding=4` (escala Tailwind), `padding="10px"`, `padding="2 4"` (vertical horizontal), `padding="1 2 3 4"` (arriba derecha abajo izquierda).
+    *   `margin`: Espaciado externo. Similar a `padding`. Ejemplos: `margin=2`, `margin="0 auto"`.
+    *   `align`: Para alineación de texto. Valores: `left`, `center`, `right`, `justify`. Ejemplo: `Text "Centrado" align=center`. (Nota: para alinear elementos dentro de un `Container` tipo flex/grid, se usarían propiedades de contenedor o `self-*` en los hijos, no implementado como atributo genérico `align` en hijos aún).
+    *   `rounded` (o `radius`, `border-radius`): Redondez de bordes. Valores: `sm`, `md`, `lg`, `xl`, `2xl`, `3xl`, `full` (Tailwind) o valores CSS (e.g., `rounded="10px"`). Ejemplo: `Button "Redondeado" rounded=full`.
+    *   `shadow`: Sombra de caja. Valores: `sm`, `md`, `lg`, `xl`, `2xl`, `inner`, `none`. Ejemplo: `Container shadow=lg`.
+    *   `textColor`: Color del texto. Valores: nombres de color Tailwind (e.g., `red-500`, `blue-700`), hexadecimales (`#RRGGBB`), RGB (`rgb(R,G,B)`), RGBA. Ejemplo: `Title "Título Oscuro" textColor="#333333"`.
+    *   `bgColor`: Color de fondo. Similar a `textColor`. Ejemplo: `Container bgColor=gray-100`. (Nota: En componentes como `Button` y `Tag`, su atributo `color` específico para el tema tiene precedencia para el fondo).
+    *   `width`, `height`: Dimensiones del elemento. Valores: `auto`, `full` (100%), `screen` (100vw/vh), fracciones Tailwind (`1/2`, `3/4`), numéricos Tailwind (`w-24`), o valores CSS (`300px`, `50%`, `75vw`). Ejemplo: `Input placeholder="Ancho completo" width=full`.
+
 *   **Extensible**: Fácil de añadir nuevos tipos de elementos, atributos y componentes.
 *   **Desarrollo Rápido**: Ideal para prototipado y generación dinámica de interfaces.
 *   **Basado en Tecnologías Modernas**: Construido con React, TypeScript, Vite y TailwindCSS.
