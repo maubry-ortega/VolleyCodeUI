@@ -44,7 +44,7 @@ export default function App() {
             Title "Quick Info" textColor="#374151" size=xl margin="0 0 4 0"
             Text "This section demonstrates various visual elements available in VolleyCodeUI." textColor=gray-700 size=sm margin="0 0 4 0"
             
-            Image src="https://via.placeholder.com/250x150.png?text=VolleyUI+Demo" alt="Placeholder Image" width=100% height=auto rounded=md shadow=sm margin="0 0 4 0"
+            Image src="https://dummyimage.com/250x150/cccccc/888888.png&text=VolleyUI+Demo" alt="Placeholder Image" width=100% height=auto rounded=md shadow=sm margin="0 0 4 0"
             
             Container padding=3 bgColor=white rounded=md shadow=xs
                 Tag "New Feature!" color=purple size=sm margin="0 0 2 0"
