@@ -150,22 +150,14 @@ export function renderUI(elements: UIElement[]) {
       
       case 'Container':
         const containerEl = el as ContainerElement;
+        // Ensure this is the only declaration of generalClassNames and generalInlineStyles in this block.
         const { classNames: generalClassNames, inlineStyles: generalInlineStyles } = processStyleAttributes(containerEl.attributes);
         
-        // Note: The previous Container specific width/height handling via dynamicStyles
-        // is now incorporated into processStyleAttributes if 'width'/'height' attributes are used.
-        // If containerEl.attributes.width was "300px", generalInlineStyles will now include { width: "300px" }.
-        // If it was "1/2", generalClassNames will include "w-1/2".
-
-        // The Container component has default padding like 'p-4'. 
-        // If `padding` attribute is used, it should override this.
-        // This is handled because Container.tsx combines its default className with the passed one.
-        // If `processStyleAttributes` generates padding classes (e.g. p-2 from padding=2),
-        // they will be part of `generalClassNames` and effectively override the default p-4 if Container.tsx's
-        // base classes are structured to allow this (e.g. if it doesn't hardcode padding stronger).
-        // Container.tsx: className = 'p-4 border rounded shadow-md my-2'
-        // Passed className from here will be appended. Tailwind usually takes the last conflicting class.
-        // So if generalClassNames has 'p-2', the result might be "p-4 ... p-2". This should result in p-2.
+        // Comments explaining interaction with Container.tsx defaults and Tailwind precedence:
+        // - Container.tsx has default classes (e.g., 'p-4 border rounded shadow-md my-2').
+        // - `generalClassNames` (e.g., from `padding=2` becoming `p-2`) are appended.
+        // - Tailwind applies the last conflicting utility class (e.g., `p-4 ... p-2` results in `p-2`).
+        // - `generalInlineStyles` are applied directly.
 
         return (
           <Container 
